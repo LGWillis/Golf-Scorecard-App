@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { searchCourses, getCoursePars } from '../lib/courseApi'
+import { todayLocal } from '../lib/format'
 
 export default function NewRound() {
   const navigate = useNavigate()
@@ -12,8 +13,9 @@ export default function NewRound() {
   const [selected, setSelected] = useState(null)
   const [manualName, setManualName] = useState('')
   const [numHoles, setNumHoles] = useState(18)
+  const [nine, setNine] = useState('front') // 'front' | 'back', only used for 9 holes
+  const [playedOn, setPlayedOn] = useState(todayLocal())
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
   const [starting, setStarting] = useState(false)
 
   async function handleSearch(e) {
@@ -32,21 +34,20 @@ export default function NewRound() {
   }
 
   const courseName = manual ? manualName.trim() : selected?.name
-  const canStart = Boolean(courseName) && !starting
+  const canStart = Boolean(courseName) && Boolean(playedOn) && !starting
 
   async function startRound() {
     setError('')
     setStarting(true)
 
+    const startHole = numHoles === 9 && nine === 'back' ? 10 : 1
+
     // Default to par 4 everywhere. Used for manual courses, or when the API has no scorecard.
     let pars = Array(numHoles).fill(4)
     if (!manual && selected) {
       const apiPars = await getCoursePars(selected.id)
-      if (apiPars && apiPars.length >= numHoles) {
-        pars = apiPars.slice(0, numHoles)
-      } else {
-        setNotice('No scorecard found for this course, so every hole starts at par 4. You can change the par on each hole.')
-      }
+      const slice = apiPars ? apiPars.slice(startHole - 1, startHole - 1 + numHoles) : []
+      if (slice.length === numHoles) pars = slice
     }
 
     const { data: round, error: roundError } = await supabase
@@ -55,6 +56,8 @@ export default function NewRound() {
         course_name: courseName,
         course_api_id: manual ? null : selected.id,
         num_holes: numHoles,
+        start_hole: startHole,
+        played_on: playedOn,
       })
       .select()
       .single()
@@ -65,7 +68,11 @@ export default function NewRound() {
       return
     }
 
-    const holeRows = pars.map((par, i) => ({ round_id: round.id, hole_number: i + 1, par }))
+    const holeRows = pars.map((par, i) => ({
+      round_id: round.id,
+      hole_number: startHole + i,
+      par,
+    }))
     const { error: holesError } = await supabase.from('hole_scores').insert(holeRows)
 
     if (holesError) {
@@ -79,7 +86,7 @@ export default function NewRound() {
   }
 
   return (
-    <main className="page">
+    <main className="page page-narrow">
       <div className="topbar">
         <h1>New round</h1>
         <Link to="/" className="btn btn-ghost btn-small" style={{ textDecoration: 'none' }}>Cancel</Link>
@@ -132,8 +139,23 @@ export default function NewRound() {
         ))}
       </div>
 
+      {numHoles === 9 && (
+        <>
+          <p className="label">Which nine?</p>
+          <div className="seg">
+            <button aria-pressed={nine === 'front'} onClick={() => setNine('front')}>Front 9</button>
+            <button aria-pressed={nine === 'back'} onClick={() => setNine('back')}>Back 9</button>
+          </div>
+        </>
+      )}
+
+      <div className="field" style={{ marginTop: 18 }}>
+        <label htmlFor="played-on">Date played</label>
+        <input id="played-on" type="date" className="input" value={playedOn}
+          max={todayLocal()} onChange={(e) => setPlayedOn(e.target.value)} />
+      </div>
+
       {error && <p className="error" style={{ marginTop: 16 }}>{error}</p>}
-      {notice && <p className="muted" style={{ marginTop: 16 }}>{notice}</p>}
 
       <button className="btn btn-primary btn-wide" style={{ marginTop: 24 }} disabled={!canStart} onClick={startRound}>
         {starting ? 'Starting…' : 'Start round'}

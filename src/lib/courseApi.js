@@ -1,9 +1,5 @@
 // OpenGolfAPI: free, no key needed for reading courses.
 // Docs: https://opengolfapi.org/docs
-//
-// The response shapes below are handled defensively because I couldn't test
-// against live data. Open the browser console while searching: if names or pars
-// come back empty, check the logged response and adjust the field names here.
 
 const BASE = 'https://api.opengolfapi.org'
 
@@ -24,25 +20,50 @@ export async function searchCourses(query) {
     .filter((c) => c.id)
 }
 
-// Returns an array of pars (index 0 = hole 1), or null if the course has no usable scorecard.
-export async function getCoursePars(courseId) {
-  try {
-    const res = await fetch(`${BASE}/api/v1/courses/${encodeURIComponent(courseId)}`)
-    if (!res.ok) return null
-    const data = await res.json()
-    console.log('Course detail response:', data)
-
-    const course = data.course ?? data
-    const raw = course.holes ?? course.scorecard?.holes ?? course.scorecard ?? []
-    if (!Array.isArray(raw) || raw.length === 0) return null
-
-    const holes = raw
-      .map((h, i) => ({ number: Number(h.number ?? h.hole ?? i + 1), par: Number(h.par) }))
-      .filter((h) => Number.isInteger(h.par) && h.par >= 3 && h.par <= 6)
-      .sort((a, b) => a.number - b.number)
-
-    return holes.length ? holes.map((h) => h.par) : null
-  } catch {
-    return null
+// On a course, "holes" is usually just a number (18), so only accept real lists.
+function findHoleList(data) {
+  if (Array.isArray(data) && data.length > 0) return data
+  const roots = [data, data?.course, data?.data, data?.properties, data?.course?.properties]
+  for (const root of roots) {
+    if (!root || typeof root !== 'object') continue
+    for (const candidate of [root.scorecard, root.scorecard?.holes, root.holes]) {
+      if (Array.isArray(candidate) && candidate.length > 0) return candidate
+    }
   }
+  return null
+}
+
+// Turns a list like [{ hole: 1, par: 4 }, ...] into [4, ...] (index 0 = hole 1).
+function toPars(list) {
+  const pars = []
+  list.forEach((h, i) => {
+    const number = Number(h.hole ?? h.number ?? h.hole_number ?? i + 1)
+    const par = Number(h.par ?? h.Par)
+    if (Number.isInteger(number) && number >= 1 && Number.isInteger(par) && par >= 3 && par <= 6) {
+      pars[number - 1] = par
+    }
+  })
+  const dense = Array.from(pars) // fills gaps with undefined so we can detect missing holes
+  return dense.length >= 9 && dense.every(Number.isInteger) ? dense : null
+}
+
+// Returns an array of pars, or null if the course has no usable scorecard.
+export async function getCoursePars(courseId) {
+  const id = encodeURIComponent(courseId)
+  const paths = [`/v1/courses/${id}`, `/v1/courses/${id}/holes`, `/api/v1/courses/${id}`]
+
+  for (const path of paths) {
+    try {
+      const res = await fetch(`${BASE}${path}`)
+      if (!res.ok) continue
+      const data = await res.json()
+      console.log(`Course detail response (${path}):`, data)
+      const list = findHoleList(data)
+      const pars = list && toPars(list)
+      if (pars) return pars
+    } catch {
+      // try the next endpoint
+    }
+  }
+  return null
 }

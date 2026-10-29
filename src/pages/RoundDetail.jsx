@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { summarize, formatDiff, formatDate } from '../lib/format'
+import { summarize, formatDiff, describeHoles, todayLocal } from '../lib/format'
 
 export default function RoundDetail() {
   const { id } = useParams()
@@ -29,6 +29,13 @@ export default function RoundDetail() {
     else navigate('/')
   }
 
+  async function changeDate(value) {
+    if (!value) return
+    const { error } = await supabase.from('rounds').update({ played_on: value }).eq('id', id)
+    if (error) setError(error.message)
+    else setRound({ ...round, played_on: value })
+  }
+
   if (error) return <p className="center-note">{error}</p>
   if (!round) return <p className="center-note">Loading…</p>
 
@@ -41,7 +48,12 @@ export default function RoundDetail() {
       </div>
 
       <h1>{round.course_name}</h1>
-      <p className="muted">{formatDate(round.played_at)} · {round.num_holes} holes</p>
+      <p className="muted">{describeHoles(round)}</p>
+      <div className="field" style={{ maxWidth: 220, marginTop: 12 }}>
+        <label htmlFor="played-on">Date played</label>
+        <input id="played-on" type="date" className="input" value={round.played_on}
+          max={todayLocal()} onChange={(e) => changeDate(e.target.value)} />
+      </div>
 
       <div className="totals">
         <span className="big">{s.strokes}</span>

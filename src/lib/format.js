@@ -11,10 +11,25 @@ export function formatDiff(diff) {
   return diff > 0 ? `+${diff}` : `${diff}`
 }
 
-export function formatDate(iso) {
-  return new Date(iso).toLocaleDateString(undefined, {
+// Accepts 'YYYY-MM-DD' (or a full timestamp) and shows it as the calendar date, with no timezone shift.
+export function formatDate(value) {
+  if (!value) return ''
+  const [y, m, d] = value.slice(0, 10).split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+// Today's date on the user's own clock, as 'YYYY-MM-DD'.
+export function todayLocal() {
+  const d = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+export function describeHoles(round) {
+  if (round.num_holes === 18) return '18 holes'
+  return round.start_hole === 10 ? '9 holes (back)' : '9 holes (front)'
 }

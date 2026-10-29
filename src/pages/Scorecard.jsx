@@ -114,7 +114,11 @@ export default function Scorecard() {
 
       <main className="play-body">
         <div className="hole-number">{hole.hole_number}</div>
-        <div className="hole-of">Hole {hole.hole_number} of {holes.length}</div>
+        <div className="hole-of">
+          {round.num_holes === 9
+          ? `${round.start_hole === 10 ? 'Back' : 'Front'} nine · ${index + 1} of ${holes.length}`
+          : `Hole ${hole.hole_number} of ${holes.length}`}
+        </div>
 
         <div className="label">Par</div>
         <div className="par-seg">

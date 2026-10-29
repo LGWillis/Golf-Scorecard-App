@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { summarize, formatDiff, formatDate } from '../lib/format'
+import { summarize, formatDiff, formatDate, describeHoles } from '../lib/format'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -12,6 +12,7 @@ export default function Home() {
     supabase
       .from('rounds')
       .select('*, hole_scores(score, par)')
+      .order('played_on', { ascending: false })
       .order('played_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) setError(error.message)
@@ -31,7 +32,7 @@ export default function Home() {
         <button className="btn btn-ghost btn-small" onClick={logOut}>Log out</button>
       </div>
 
-      <Link to="/new" className="btn btn-primary btn-wide" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
+      <Link to="/new" className="btn btn-primary btn-wide start-btn" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
         Start new round
       </Link>
 
@@ -55,7 +56,7 @@ export default function Home() {
                       {r.course_name}
                       {inProgress && <span className="badge">In progress</span>}
                     </div>
-                    <div className="round-meta">{formatDate(r.played_at)} · {r.num_holes} holes</div>
+                    <div className="round-meta">{formatDate(r.played_on)} · {describeHoles(r)}</div>
                   </div>
                   <div className="round-score">
                     {s.holesPlayed ? s.strokes : '–'}

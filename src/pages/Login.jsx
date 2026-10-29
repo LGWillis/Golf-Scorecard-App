@@ -32,8 +32,8 @@ export default function Login() {
   }
 
   return (
-    <main className="page">
-      <h1 style={{ margin: '40px 0 4px' }}>Scorecard</h1>
+    <main className="page page-narrow">
+      <h1 style={{ margin: '40px 0 4px' }}>Golf Scorecard</h1>
       <p className="muted" style={{ marginBottom: 28 }}>
         {mode === 'signin' ? 'Sign in to see your rounds.' : 'Create an account to start tracking rounds.'}
       </p>
