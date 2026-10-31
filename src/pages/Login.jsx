@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
+import Logo from '../components/Logo'
 
 export default function Login() {
   const { session } = useAuth()
@@ -31,9 +32,18 @@ export default function Login() {
     setBusy(false)
   }
 
+  function switchMode() {
+    setMode(mode === 'signin' ? 'signup' : 'signin')
+    setError('')
+    setMessage('')
+  }
+
   return (
     <main className="page page-narrow">
-      <h1 style={{ margin: '40px 0 4px' }}>Golf Scorecard</h1>
+      <div className="login-logo">
+        <Logo size={56} />
+      </div>
+      <h1 style={{ margin: '16px 0 4px' }}>Golf Scorecard</h1>
       <p className="muted" style={{ marginBottom: 28 }}>
         {mode === 'signin' ? 'Sign in to see your rounds.' : 'Create an account to start tracking rounds.'}
       </p>
@@ -41,14 +51,28 @@ export default function Login() {
       <form onSubmit={handleSubmit}>
         <div className="field">
           <label htmlFor="email">Email</label>
-          <input id="email" className="input" type="email" autoComplete="email" required
-            value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input
+            id="email"
+            className="input"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
         <div className="field">
           <label htmlFor="password">Password</label>
-          <input id="password" className="input" type="password" minLength={6} required
+          <input
+            id="password"
+            className="input"
+            type="password"
+            minLength={6}
+            required
             autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-            value={password} onChange={(e) => setPassword(e.target.value)} />
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
 
         {error && <p className="error">{error}</p>}
@@ -61,7 +85,7 @@ export default function Login() {
 
       <p style={{ marginTop: 20 }}>
         {mode === 'signin' ? 'New here? ' : 'Already have an account? '}
-        <button className="link-btn" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(''); setMessage('') }}>
+        <button className="link-btn" onClick={switchMode}>
           {mode === 'signin' ? 'Create an account' : 'Sign in'}
         </button>
       </p>

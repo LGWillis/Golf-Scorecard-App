@@ -191,3 +191,43 @@ h2 { font-size: 1.1rem; font-weight: 600; }
   .play-bottom { padding: 16px 28px; background: var(--card); }
   .textarea { min-height: 150px; }
 }
+
+.btn:active { transform: scale(0.98); }
+
+/* Brand */
+.brand { display: flex; align-items: center; gap: 12px; }
+
+/* Home stats */
+.stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  background: var(--card); border-radius: 16px; padding: 16px; margin-top: 16px;
+}
+.stats > div { display: flex; flex-direction: column; align-items: center; }
+.stat-num { font-size: 1.9rem; font-weight: 800; color: var(--turf); line-height: 1.1; }
+.stat-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+
+/* Colored edge on round cards */
+.round-link { box-shadow: inset 6px 0 0 var(--accent, var(--line)); padding-left: 22px; }
+.round-link.under { --accent: var(--turf); }
+.round-link.over { --accent: var(--flag); }
+.round-link.even { --accent: var(--pencil); }
+.round-link.under .round-score small { color: var(--turf); }
+.round-link.over .round-score small { color: var(--flag); }
+
+/* Scorecard notation */
+.mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; height: 30px; padding: 0 4px;
+}
+.shape-birdie { border: 2px solid var(--turf); border-radius: 50%; }
+.shape-eagle { border: 2px solid var(--turf); border-radius: 50%; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--turf); }
+.shape-bogey { border: 2px solid var(--flag); border-radius: 3px; }
+.shape-double { border: 2px solid var(--flag); border-radius: 3px; box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--flag); }
+.legend { font-size: 0.85rem; }
+
+/* Hole progress bar */
+.progress { height: 6px; background: var(--line); margin: 0 16px; border-radius: 999px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--turf); transition: width 0.25s; }
+@media (min-width: 768px) { .progress { margin: 0 28px; } }
+
+.login-logo { margin-top: 40px; }

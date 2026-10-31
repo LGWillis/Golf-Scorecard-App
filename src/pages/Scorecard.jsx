@@ -111,6 +111,10 @@ export default function Scorecard() {
           <button className="btn btn-danger btn-small" onClick={discard}>Discard round</button>
         )}
       </header>
+      
+      <div className="progress" role="progressbar" aria-valuemin={1} aria-valuemax={holes.length} aria-valuenow={index + 1}>
+        <div className="progress-fill" style={{ width: `${((index + 1) / holes.length) * 100}%` }} />
+      </div>
 
       <main className="play-body">
         <div className="hole-number">{hole.hole_number}</div>

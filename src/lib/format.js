@@ -11,6 +11,16 @@ export function formatDiff(diff) {
   return diff > 0 ? `+${diff}` : `${diff}`
 }
 
+export function scoreShape(score, par) {
+  if (score === null || score === undefined) return ''
+  const d = score - par
+  if (d <= -2) return 'shape-eagle'   // double circle
+  if (d === -1) return 'shape-birdie' // circle
+  if (d === 1) return 'shape-bogey'   // square
+  if (d >= 2) return 'shape-double'   // double square
+  return ''
+}
+
 // Accepts 'YYYY-MM-DD' (or a full timestamp) and shows it as the calendar date, with no timezone shift.
 export function formatDate(value) {
   if (!value) return ''

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { summarize, formatDiff, describeHoles, todayLocal } from '../lib/format'
+import { summarize, formatDiff, scoreShape, describeHoles, todayLocal } from '../lib/format'
 
 export default function RoundDetail() {
   const { id } = useParams()
@@ -69,12 +69,13 @@ export default function RoundDetail() {
             <tr key={h.id}>
               <td>{h.hole_number}</td>
               <td>{h.par}</td>
-              <td className="num">{h.score ?? '–'}</td>
+              <td className="num"><span className={`mark ${scoreShape(h.score, h.par)}`}>{h.score ?? '–'}</span></td>
               <td className="notes">{h.notes}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <p className="muted legend">○ under par · □ over par · doubled for 2 or more</p>
 
       <div className="actions">
         <Link to={`/round/${id}/play`} className="btn btn-primary" style={{ textAlign: 'center', textDecoration: 'none' }}>Edit round</Link>
